@@ -1,5 +1,28 @@
-/.vscode
+# Reference https://github.com/github/gitignore/blob/master/Go.gitignore
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
 /dist
+go_build_janusec
+
+# OS General
+Thumbs.db
+.DS_Store
+
+# project
+*.cert
+*.key
+*.log
+bin/
 /janusec
 /luci
 /config.json
@@ -8,3 +31,10 @@
 /static/cdncache
 /certs
 /*.sqlite3
+
+# Develop tools
+.vscode/
+.idea/
+*.swp
+
+

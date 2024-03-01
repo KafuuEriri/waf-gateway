@@ -63,17 +63,24 @@ const (
 )
 
 type GroupPolicy struct {
-	ID          int64        `json:"id,string"`
-	Description string       `json:"description"`
-	AppID       int64        `json:"app_id,string"`
-	VulnID      int64        `json:"vuln_id"`
-	CheckItems  []*CheckItem `json:"check_items"`
-	HitValue    int64        `json:"hit_value"`
-	Action      PolicyAction `json:"action"`
-	IsEnabled   bool         `json:"is_enabled"`
-	UserID      int64        `json:"user_id,string"`
-	User        *AppUser     `json:"-"`
-	UpdateTime  int64        `json:"update_time"`
+	ID                   int64        `json:"id,string"`
+	Description          string       `json:"description"`
+	AppID                int64        `json:"app_id,string"`
+	VulnID               int64        `json:"vuln_id"`
+	CheckItems           []*CheckItem `json:"check_items"` // 拦截规则
+	HitValue             int64        `json:"hit_value"`
+	Action               PolicyAction `json:"action"` // 拦截动作
+	IsEnabled            bool         `json:"is_enabled"`
+	CcStatus             bool         `json:"cc_status"`             // 是否开启限速
+	IntervalMilliSeconds float64      `json:"interval_milliseconds"` // 单位时间
+	MaxCount             int64        `json:"max_count"`             // 最大次数
+	BlockSeconds         float64      `json:"block_seconds"`         // 封禁时间
+	StatByURL            bool         `json:"stat_by_url"`           // 统计url
+	StatByUserAgent      bool         `json:"stat_by_ua"`            // 统计agent
+	StatByCookie         bool         `json:"stat_by_cookie"`        // 统计cookie
+	UserID               int64        `json:"user_id,string"`
+	User                 *AppUser     `json:"-"`
+	UpdateTime           int64        `json:"update_time"`
 }
 
 /*

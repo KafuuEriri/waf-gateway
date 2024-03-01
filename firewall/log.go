@@ -34,7 +34,7 @@ func InitHitLog() {
 }
 
 // LogCCRequest ...
-func LogCCRequest(r *http.Request, appID int64, clientIP string, policy *models.CCPolicy) {
+func LogCCRequest(r *http.Request, appID int64, clientIP string, action models.PolicyAction) {
 	requestTime := time.Now().Unix()
 	contentType := r.Header.Get("Content-Type")
 	cookies := r.Header.Get("Cookie")
@@ -51,7 +51,7 @@ func LogCCRequest(r *http.Request, appID int64, clientIP string, policy *models.
 	}
 	rawRequest := string(rawRequestBytes[:maxRawSize])
 	if data.IsPrimary {
-		err = data.DAL.InsertCCLog(requestTime, clientIP, r.Host, r.Method, r.URL.Path, r.URL.RawQuery, contentType, r.UserAgent(), cookies, rawRequest, int64(policy.Action), appID)
+		err = data.DAL.InsertCCLog(requestTime, clientIP, r.Host, r.Method, r.URL.Path, r.URL.RawQuery, contentType, r.UserAgent(), cookies, rawRequest, int64(action), appID)
 		if err != nil {
 			utils.DebugPrintln("InsertCCLog error", err)
 		}
@@ -67,8 +67,9 @@ func LogCCRequest(r *http.Request, appID int64, clientIP string, policy *models.
 			UserAgent:   r.UserAgent(),
 			Cookies:     cookies,
 			RawRequest:  rawRequest,
-			Action:      policy.Action,
-			AppID:       appID}
+			Action:      action,
+			AppID:       appID,
+		}
 		RPCCCLog(ccLog)
 	}
 }

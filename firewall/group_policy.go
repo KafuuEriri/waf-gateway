@@ -10,6 +10,7 @@ package firewall
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -48,7 +49,15 @@ func InitGroupPolicy() {
 				}
 			*/
 			curTime := time.Now().Unix()
-			groupPolicyID, err := data.DAL.InsertGroupPolicy("Code Leakage", 0, 100, int64(models.ChkPointURLPath), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err := data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Code Leakage",
+				VulnID:      100,
+				HitValue:    int64(models.ChkPointURLPath),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -58,7 +67,15 @@ func InitGroupPolicy() {
 			}
 
 			// r.Form get nil when query use % instead for %25, so check it in url query
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("SQL Injection with Search", 0, 200, int64(models.ChkPointURLQuery), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "SQL Injection with Search",
+				VulnID:      200,
+				HitValue:    int64(models.ChkPointURLQuery),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -68,7 +85,15 @@ func InitGroupPolicy() {
 			}
 
 			// Multiple Sentences SQL Injection  ;\s*(declare|use|drop|create|exec)\s
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("SQL Injection with Multiple Sentences", 0, 200, int64(models.ChkPointURLQuery), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "SQL Injection with Multiple Sentences",
+				VulnID:      200,
+				HitValue:    int64(models.ChkPointURLQuery),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -78,7 +103,15 @@ func InitGroupPolicy() {
 			}
 
 			//  SQL Injection Function
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Basic SQL Injection Functions", 0, 200, int64(models.ChkPointURLQuery), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Basic SQL Injection Functions",
+				VulnID:      200,
+				HitValue:    int64(models.ChkPointURLQuery),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -88,7 +121,15 @@ func InitGroupPolicy() {
 			}
 
 			//  SQL Injection Case When
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Basic SQL Injection Case When", 0, 200, int64(models.ChkPointURLQuery), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Basic SQL Injection Case When",
+				VulnID:      200,
+				HitValue:    int64(models.ChkPointURLQuery),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -97,7 +138,15 @@ func InitGroupPolicy() {
 				utils.DebugPrintln("InitGroupPolicy InsertCheckItem", err)
 			}
 
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Basic SQL Injection Attempt", 0, 200, int64(models.ChkPointGetPostValue), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Basic SQL Injection Attempt",
+				VulnID:      200,
+				HitValue:    int64(models.ChkPointGetPostValue),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -106,7 +155,15 @@ func InitGroupPolicy() {
 				utils.DebugPrintln("InitGroupPolicy InsertCheckItem", err)
 			}
 
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Basic SQL Injection Attempt 2", 0, 200, int64(models.ChkPointGetPostValue), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Basic SQL Injection Attempt 2",
+				VulnID:      200,
+				HitValue:    int64(models.ChkPointGetPostValue),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -115,7 +172,15 @@ func InitGroupPolicy() {
 				utils.DebugPrintln("InitGroupPolicy InsertCheckItem", err)
 			}
 
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Basic SQL Injection Attempt 3", 0, 200, int64(models.ChkPointGetPostValue), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Basic SQL Injection Attempt 3",
+				VulnID:      200,
+				HitValue:    int64(models.ChkPointGetPostValue),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -124,7 +189,16 @@ func InitGroupPolicy() {
 				utils.DebugPrintln("InitGroupPolicy InsertCheckItem", err)
 			}
 
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Basic SQL Injection Comment", 0, 200, int64(models.ChkPointGetPostValue), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Basic SQL Injection Comment",
+				VulnID:      200,
+				CheckItems:  nil,
+				HitValue:    int64(models.ChkPointGetPostValue),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -133,7 +207,16 @@ func InitGroupPolicy() {
 				utils.DebugPrintln("InitGroupPolicy InsertCheckItem", err)
 			}
 
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Union SQL Injection", 0, 200, int64(models.ChkPointGetPostValue), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Union SQL Injection",
+				VulnID:      200,
+				CheckItems:  nil,
+				HitValue:    int64(models.ChkPointURLPath),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -142,7 +225,15 @@ func InitGroupPolicy() {
 				utils.DebugPrintln("InitGroupPolicy InsertCheckItem", err)
 			}
 
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Command Injection", 0, 210, int64(models.ChkPointGetPostValue), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Command Injection",
+				VulnID:      210,
+				HitValue:    int64(models.ChkPointGetPostValue),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -151,7 +242,15 @@ func InitGroupPolicy() {
 				utils.DebugPrintln("InitGroupPolicy InsertCheckItem", err)
 			}
 
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Web Shell", 0, 500, int64(models.ChkPointGetPostValue), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Web Shell",
+				VulnID:      500,
+				HitValue:    int64(models.ChkPointGetPostValue),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -160,7 +259,15 @@ func InitGroupPolicy() {
 				utils.DebugPrintln("InitGroupPolicy InsertCheckItem", err)
 			}
 
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Upload", 0, 510, int64(models.ChkPointUploadFileExt), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Upload",
+				VulnID:      510,
+				HitValue:    int64(models.ChkPointUploadFileExt),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -170,7 +277,15 @@ func InitGroupPolicy() {
 			}
 
 			// XSS Tags
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Basic XSS Tags", 0, 300, int64(models.ChkPointURLQuery), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Basic XSS Tags",
+				VulnID:      300,
+				HitValue:    int64(models.ChkPointURLQuery),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -180,7 +295,16 @@ func InitGroupPolicy() {
 			}
 
 			// XSS Functions
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Basic XSS Functions", 0, 300, int64(models.ChkPointURLQuery), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Basic XSS Functions",
+				VulnID:      300,
+				CheckItems:  nil,
+				HitValue:    int64(models.ChkPointURLQuery),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -190,7 +314,15 @@ func InitGroupPolicy() {
 			}
 
 			// XSS Event
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Basic XSS Event", 0, 300, int64(models.ChkPointURLQuery), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Basic XSS Event",
+				VulnID:      300,
+				HitValue:    int64(models.ChkPointURLQuery),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -200,7 +332,16 @@ func InitGroupPolicy() {
 			}
 
 			// Path Traversal
-			groupPolicyID, err = data.DAL.InsertGroupPolicy("Basic Path Traversal", 0, 400, int64(models.ChkPointURLQuery), models.Action_Block_100, true, 0, curTime)
+			groupPolicyID, err = data.DAL.InsertGroupPolicy(models.GroupPolicy{
+				Description: "Basic Path Traversal",
+				VulnID:      400,
+				CheckItems:  nil,
+				HitValue:    int64(models.ChkPointURLQuery),
+				Action:      models.Action_Block_100,
+				IsEnabled:   true,
+				CcStatus:    false,
+				UpdateTime:  curTime,
+			})
 			if err != nil {
 				utils.DebugPrintln("InitGroupPolicy InsertGroupPolicy", err)
 			}
@@ -215,16 +356,24 @@ func InitGroupPolicy() {
 		for _, dbGroupPolicy := range dbGroupPolicies {
 			user, _ := usermgmt.GetAppUserByID(dbGroupPolicy.UserID)
 			groupPolicy := &models.GroupPolicy{
-				ID:          dbGroupPolicy.ID,
-				Description: dbGroupPolicy.Description,
-				AppID:       dbGroupPolicy.AppID,
-				VulnID:      dbGroupPolicy.VulnID,
-				CheckItems:  []*models.CheckItem{},
-				HitValue:    dbGroupPolicy.HitValue,
-				Action:      dbGroupPolicy.Action,
-				IsEnabled:   dbGroupPolicy.IsEnabled,
-				User:        user,
-				UpdateTime:  dbGroupPolicy.UpdateTime}
+				ID:                   dbGroupPolicy.ID,
+				Description:          dbGroupPolicy.Description,
+				AppID:                dbGroupPolicy.AppID,
+				VulnID:               dbGroupPolicy.VulnID,
+				CheckItems:           []*models.CheckItem{},
+				HitValue:             dbGroupPolicy.HitValue,
+				Action:               dbGroupPolicy.Action,
+				IsEnabled:            dbGroupPolicy.IsEnabled,
+				CcStatus:             dbGroupPolicy.CcStatus,
+				IntervalMilliSeconds: dbGroupPolicy.IntervalMilliSeconds,
+				MaxCount:             dbGroupPolicy.MaxCount,
+				BlockSeconds:         dbGroupPolicy.BlockSeconds,
+				StatByURL:            dbGroupPolicy.StatByURL,
+				StatByUserAgent:      dbGroupPolicy.StatByUserAgent,
+				StatByCookie:         dbGroupPolicy.StatByCookie,
+				User:                 user,
+				UpdateTime:           dbGroupPolicy.UpdateTime,
+			}
 			groupPolicies = append(groupPolicies, groupPolicy)
 		}
 	} else {
@@ -307,7 +456,23 @@ func UpdateGroupPolicy(r *http.Request, clientIP string, authUser *models.AuthUs
 	curGroupPolicy.UserID = authUser.UserID
 	curTime := time.Now().Unix()
 	if curGroupPolicy.ID == 0 {
-		newID, err := data.DAL.InsertGroupPolicy(curGroupPolicy.Description, curGroupPolicy.AppID, curGroupPolicy.VulnID, curGroupPolicy.HitValue, curGroupPolicy.Action, curGroupPolicy.IsEnabled, curGroupPolicy.UserID, curTime)
+		newID, err := data.DAL.InsertGroupPolicy(models.GroupPolicy{
+			Description:          curGroupPolicy.Description,
+			AppID:                curGroupPolicy.AppID,
+			VulnID:               curGroupPolicy.VulnID,
+			HitValue:             curGroupPolicy.HitValue,
+			Action:               curGroupPolicy.Action,
+			IsEnabled:            curGroupPolicy.IsEnabled,
+			CcStatus:             curGroupPolicy.CcStatus,
+			IntervalMilliSeconds: curGroupPolicy.IntervalMilliSeconds,
+			MaxCount:             curGroupPolicy.MaxCount,
+			BlockSeconds:         curGroupPolicy.BlockSeconds,
+			StatByURL:            curGroupPolicy.StatByURL,
+			StatByUserAgent:      curGroupPolicy.StatByUserAgent,
+			StatByCookie:         curGroupPolicy.StatByCookie,
+			UserID:               curGroupPolicy.UserID,
+			UpdateTime:           curTime,
+		})
 		if err != nil {
 			utils.DebugPrintln("UpdateGroupPolicy InsertGroupPolicy", err)
 		}
@@ -320,18 +485,28 @@ func UpdateGroupPolicy(r *http.Request, clientIP string, authUser *models.AuthUs
 		go utils.OperationLog(clientIP, authUser.Username, "Add Group Policy", curGroupPolicy.Description)
 	} else {
 		groupPolicy, err := GetGroupPolicyByID(curGroupPolicy.ID)
-		if err != nil {
-			utils.DebugPrintln("UpdateGroupPolicy GetGroupPolicyByID", err)
-		}
-		_ = data.DAL.UpdateGroupPolicy(curGroupPolicy.Description, curGroupPolicy.AppID, curGroupPolicy.VulnID, curGroupPolicy.HitValue, curGroupPolicy.Action, curGroupPolicy.IsEnabled, curGroupPolicy.UserID, curTime, groupPolicy.ID)
 		groupPolicy.Description = curGroupPolicy.Description
 		groupPolicy.AppID = curGroupPolicy.AppID
 		groupPolicy.VulnID = curGroupPolicy.VulnID
 		groupPolicy.HitValue = curGroupPolicy.HitValue
 		groupPolicy.Action = curGroupPolicy.Action
 		groupPolicy.IsEnabled = curGroupPolicy.IsEnabled
+		groupPolicy.CcStatus = curGroupPolicy.CcStatus
+		groupPolicy.IntervalMilliSeconds = curGroupPolicy.IntervalMilliSeconds
+		groupPolicy.MaxCount = curGroupPolicy.MaxCount
+		groupPolicy.BlockSeconds = curGroupPolicy.BlockSeconds
+		groupPolicy.StatByURL = curGroupPolicy.StatByURL
+		groupPolicy.StatByUserAgent = curGroupPolicy.StatByUserAgent
+		groupPolicy.StatByCookie = curGroupPolicy.StatByCookie
 		groupPolicy.UserID = curGroupPolicy.UserID
 		groupPolicy.UpdateTime = curTime
+		if err != nil {
+			utils.DebugPrintln("UpdateGroupPolicy GetGroupPolicyByID", err)
+		}
+		_ = data.DAL.UpdateGroupPolicy(*groupPolicy)
+		if err != nil {
+			utils.DebugPrintln("UpdateGroupPolicy UpdateGroupPolicy", err)
+		}
 		err = UpdateCheckItems(groupPolicy, checkItems)
 		if err != nil {
 			utils.DebugPrintln("UpdateGroupPolicy UpdateCheckItems error", err)
@@ -428,6 +603,47 @@ func IsMatchGroupPolicy(hitValueMap *sync.Map, appID int64, value string, checkP
 		}
 	}
 	return false, nil
+}
+
+// IsMatchGroupPolicyRateLimit 是否匹配到频率限制
+func IsMatchGroupPolicyRateLimit(r *http.Request, policy *models.GroupPolicy, srcIP string) (bool, string, bool) {
+	if !policy.CcStatus || policy.Action == models.Action_Pass_400 {
+		return false, "", false
+	}
+	ccAppID := policy.AppID
+	if policy.AppID == 0 {
+		ccAppID = 0 // Important: stat within general policy
+	}
+	ccCount, _ := ccCounts.LoadOrStore(ccAppID, &sync.Map{})
+	appCCCount := ccCount.(*sync.Map)
+	// 构建访问唯一标识
+	preHashContent := srcIP + fmt.Sprint(policy.ID)
+	if policy.StatByURL {
+		preHashContent += r.URL.Path
+	}
+	if policy.StatByUserAgent {
+		ua := r.Header.Get("User-Agent")
+		preHashContent += ua
+	}
+	if policy.StatByCookie {
+		cookie := r.Header.Get("Cookie")
+		preHashContent += cookie
+	}
+	clientID := data.SHA256Hash(preHashContent)
+	clientIDStat, _ := appCCCount.LoadOrStore(clientID, &models.ClientStat{QuickCount: 0, SlowCount: 0, TimeFrameCount: 0, IsBadIP: false, RemainSeconds: 0})
+	clientStat := clientIDStat.(*models.ClientStat)
+	clientStat.Mutex.Lock()
+	defer clientStat.Mutex.Unlock()
+	if clientStat.IsBadIP {
+		needLog := false
+		if clientStat.QuickCount == 0 {
+			clientStat.QuickCount++
+			needLog = true
+		}
+		return true, clientID, needLog
+	}
+	clientStat.QuickCount++
+	return false, "", false
 }
 
 // PreProcessString ...

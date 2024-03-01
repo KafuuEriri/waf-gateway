@@ -149,52 +149,21 @@ func ReverseHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Check CC
-	if !isAllowIP {
-		isCC, ccPolicy, clientID, needLog := firewall.IsCCAttack(r, app, srcIP)
-		if isCC {
-			targetURL := r.URL.Path
-			if len(r.URL.RawQuery) > 0 {
-				targetURL += "?" + r.URL.RawQuery
-			}
-			hitInfo := &models.HitInfo{TypeID: 1,
-				PolicyID:  ccPolicy.AppID,
-				VulnName:  "CC",
-				Action:    ccPolicy.Action,
-				ClientID:  clientID,
-				TargetURL: targetURL,
-				BlockTime: nowTimeStamp}
-			switch ccPolicy.Action {
-			case models.Action_Block_100:
-				if needLog {
-					go firewall.LogCCRequest(r, app.ID, srcIP, ccPolicy)
-				}
-				if app.ClientIPMethod == models.IPMethod_REMOTE_ADDR {
-					go firewall.AddIP2NFTables(srcIP, ccPolicy.BlockSeconds)
-				}
-				GenerateBlockPage(w, hitInfo)
-				return
-			case models.Action_BypassAndLog_200:
-				if needLog {
-					go firewall.LogCCRequest(r, app.ID, srcIP, ccPolicy)
-				}
-			case models.Action_CAPTCHA_300:
-				if needLog {
-					go firewall.LogCCRequest(r, app.ID, srcIP, ccPolicy)
-				}
-				captchaHitInfo.Store(hitInfo.ClientID, hitInfo)
-				captchaURL := CaptchaEntrance + "?id=" + hitInfo.ClientID
-				http.Redirect(w, r, captchaURL, http.StatusFound)
-				return
-			default:
-				// models.Action_Pass_400 do nothing
-			}
-		}
-	}
-
-	// WAF Check
+	// 先验证规则，
 	if !isAllowIP && app.WAFEnabled {
 		if isHit, policy := firewall.IsRequestHitPolicy(r, app.ID, srcIP); isHit {
+			clientID := GenClientID(r, app.ID, srcIP)
+			// 限制频率
+			if policy.CcStatus {
+				isCC, rlClientID, needLog := firewall.IsMatchGroupPolicyRateLimit(r, policy, srcIP)
+				clientID = rlClientID
+				if needLog {
+					go firewall.LogCCRequest(r, app.ID, srcIP, policy.Action)
+				}
+				if isCC {
+					go firewall.AddIP2NFTables(srcIP, policy.BlockSeconds)
+				}
+			}
 			switch policy.Action {
 			case models.Action_Block_100:
 				vulnName, _ := firewall.VulnMap.Load(policy.VulnID)
@@ -206,18 +175,66 @@ func ReverseHandlerFunc(w http.ResponseWriter, r *http.Request) {
 				go firewall.LogGroupHitRequest(r, app.ID, srcIP, policy)
 			case models.Action_CAPTCHA_300:
 				go firewall.LogGroupHitRequest(r, app.ID, srcIP, policy)
-				clientID := GenClientID(r, app.ID, srcIP)
 				targetURL := r.URL.Path
 				if len(r.URL.RawQuery) > 0 {
 					targetURL += "?" + r.URL.RawQuery
 				}
-				hitInfo := &models.HitInfo{TypeID: 2,
-					PolicyID: policy.ID, VulnName: "Group Policy Hit",
-					Action: policy.Action, ClientID: clientID,
-					TargetURL: targetURL, BlockTime: nowTimeStamp}
-				captchaHitInfo.Store(clientID, hitInfo)
+				captchaHitInfo.Store(clientID, &models.HitInfo{
+					TypeID:    2,
+					PolicyID:  policy.ID,
+					VulnName:  "Group Policy Hit",
+					Action:    policy.Action,
+					ClientID:  clientID,
+					TargetURL: targetURL,
+					BlockTime: nowTimeStamp,
+				})
 				captchaURL := CaptchaEntrance + "?id=" + clientID
 				http.Redirect(w, r, captchaURL, http.StatusTemporaryRedirect)
+				return
+			default:
+				// models.Action_Pass_400 do nothing
+			}
+		}
+	}
+
+	// Check CC
+	if !isAllowIP {
+		isCC, ccPolicy, clientID, needLog := firewall.IsCCAttack(r, app, srcIP)
+		if isCC {
+			targetURL := r.URL.Path
+			if len(r.URL.RawQuery) > 0 {
+				targetURL += "?" + r.URL.RawQuery
+			}
+			hitInfo := &models.HitInfo{
+				TypeID:    1,
+				PolicyID:  ccPolicy.AppID,
+				VulnName:  "CC",
+				Action:    ccPolicy.Action,
+				ClientID:  clientID,
+				TargetURL: targetURL,
+				BlockTime: nowTimeStamp,
+			}
+			switch ccPolicy.Action {
+			case models.Action_Block_100:
+				if needLog {
+					go firewall.LogCCRequest(r, app.ID, srcIP, ccPolicy.Action)
+				}
+				if app.ClientIPMethod == models.IPMethod_REMOTE_ADDR {
+					go firewall.AddIP2NFTables(srcIP, ccPolicy.BlockSeconds)
+				}
+				GenerateBlockPage(w, hitInfo)
+				return
+			case models.Action_BypassAndLog_200:
+				if needLog {
+					go firewall.LogCCRequest(r, app.ID, srcIP, ccPolicy.Action)
+				}
+			case models.Action_CAPTCHA_300:
+				if needLog {
+					go firewall.LogCCRequest(r, app.ID, srcIP, ccPolicy.Action)
+				}
+				captchaHitInfo.Store(hitInfo.ClientID, hitInfo)
+				captchaURL := CaptchaEntrance + "?id=" + hitInfo.ClientID
+				http.Redirect(w, r, captchaURL, http.StatusFound)
 				return
 			default:
 				// models.Action_Pass_400 do nothing
@@ -410,7 +427,7 @@ func ReverseHandlerFunc(w http.ResponseWriter, r *http.Request) {
 			}
 			return conn, err
 		},
-		DialTLS: func(network, addr string) (net.Conn, error) {
+		DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 			dest.CheckTime = nowTimeStamp
 			conn, err := net.Dial("tcp", targetDest)
 			if err != nil {
@@ -556,7 +573,8 @@ func ReverseHandlerFunc(w http.ResponseWriter, r *http.Request) {
 			//req.URL.Host = r.Host
 		},
 		Transport:      transport,
-		ModifyResponse: rewriteResponse}
+		ModifyResponse: rewriteResponse,
+	}
 	if utils.Debug {
 		dump, err := httputil.DumpRequest(r, true)
 		if err != nil {
@@ -565,7 +583,23 @@ func ReverseHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(string(dump))
 	}
 	r.Host = domainStr
+	setXFFHeader(r, srcIP)
 	proxy.ServeHTTP(w, r)
+}
+
+func setXFFHeader(req *http.Request, clientIP string) {
+	// If we aren't the first proxy retain prior
+	// X-Forwarded-For information as a comma+space
+	// separated list and fold multiple headers into one.
+	prior, ok := req.Header["X-Forwarded-For"]
+	omit := ok && prior == nil // Issue 38079: nil now means don't populate the header
+	if len(prior) > 0 {
+		clientIP = strings.Join(prior, ", ") + ", " + clientIP
+	}
+	if !omit {
+		req.Header.Set("X-Forwarded-For", clientIP)
+	}
+	req.Header.Set("X-Real-IP", clientIP)
 }
 
 func getOAuthEntrance(state string) (entranceURL string, err error) {
