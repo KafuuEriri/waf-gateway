@@ -198,49 +198,49 @@ func ReverseHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check CC
-	if !isAllowIP {
-		isCC, ccPolicy, clientID, needLog := firewall.IsCCAttack(r, app, srcIP)
-		if isCC {
-			targetURL := r.URL.Path
-			if len(r.URL.RawQuery) > 0 {
-				targetURL += "?" + r.URL.RawQuery
-			}
-			hitInfo := &models.HitInfo{
-				TypeID:    1,
-				PolicyID:  ccPolicy.AppID,
-				VulnName:  "CC",
-				Action:    ccPolicy.Action,
-				ClientID:  clientID,
-				TargetURL: targetURL,
-				BlockTime: nowTimeStamp,
-			}
-			switch ccPolicy.Action {
-			case models.Action_Block_100:
-				if needLog {
-					go firewall.LogCCRequest(r, app.ID, srcIP, ccPolicy.Action)
-				}
-				if app.ClientIPMethod == models.IPMethod_REMOTE_ADDR {
-					go firewall.AddIP2NFTables(srcIP, ccPolicy.BlockSeconds)
-				}
-				GenerateBlockPage(w, hitInfo)
-				return
-			case models.Action_BypassAndLog_200:
-				if needLog {
-					go firewall.LogCCRequest(r, app.ID, srcIP, ccPolicy.Action)
-				}
-			case models.Action_CAPTCHA_300:
-				if needLog {
-					go firewall.LogCCRequest(r, app.ID, srcIP, ccPolicy.Action)
-				}
-				captchaHitInfo.Store(hitInfo.ClientID, hitInfo)
-				captchaURL := CaptchaEntrance + "?id=" + hitInfo.ClientID
-				http.Redirect(w, r, captchaURL, http.StatusFound)
-				return
-			default:
-				// models.Action_Pass_400 do nothing
-			}
-		}
-	}
+	//if !isAllowIP {
+	//	isCC, ccPolicy, clientID, needLog := firewall.IsCCAttack(r, app, srcIP)
+	//	if isCC {
+	//		targetURL := r.URL.Path
+	//		if len(r.URL.RawQuery) > 0 {
+	//			targetURL += "?" + r.URL.RawQuery
+	//		}
+	//		hitInfo := &models.HitInfo{
+	//			TypeID:    1,
+	//			PolicyID:  ccPolicy.AppID,
+	//			VulnName:  "CC",
+	//			Action:    ccPolicy.Action,
+	//			ClientID:  clientID,
+	//			TargetURL: targetURL,
+	//			BlockTime: nowTimeStamp,
+	//		}
+	//		switch ccPolicy.Action {
+	//		case models.Action_Block_100:
+	//			if needLog {
+	//				go firewall.LogCCRequest(r, app.ID, srcIP, ccPolicy.Action)
+	//			}
+	//			if app.ClientIPMethod == models.IPMethod_REMOTE_ADDR {
+	//				go firewall.AddIP2NFTables(srcIP, ccPolicy.BlockSeconds)
+	//			}
+	//			GenerateBlockPage(w, hitInfo)
+	//			return
+	//		case models.Action_BypassAndLog_200:
+	//			if needLog {
+	//				go firewall.LogCCRequest(r, app.ID, srcIP, ccPolicy.Action)
+	//			}
+	//		case models.Action_CAPTCHA_300:
+	//			if needLog {
+	//				go firewall.LogCCRequest(r, app.ID, srcIP, ccPolicy.Action)
+	//			}
+	//			captchaHitInfo.Store(hitInfo.ClientID, hitInfo)
+	//			captchaURL := CaptchaEntrance + "?id=" + hitInfo.ClientID
+	//			http.Redirect(w, r, captchaURL, http.StatusFound)
+	//			return
+	//		default:
+	//			// models.Action_Pass_400 do nothing
+	//		}
+	//	}
+	//}
 
 	// Check OAuth
 	if app.OAuthRequired && data.NodeSetting.AuthConfig.Enabled {

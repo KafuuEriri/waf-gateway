@@ -22,10 +22,38 @@ import (
 	"janusec/models"
 	"janusec/usermgmt"
 	"janusec/utils"
+
+	"golang.org/x/time/rate"
 )
 
+type GroupPoliciesRateLimiter struct {
+	limiterMap map[string]*rate.Limiter
+	mu         sync.Mutex
+}
+
+func NewGroupPoliciesRateLimiter() *GroupPoliciesRateLimiter {
+	return &GroupPoliciesRateLimiter{
+		limiterMap: make(map[string]*rate.Limiter),
+	}
+}
+
+func (l *GroupPoliciesRateLimiter) Allowed(clientID string, intervalMilliSeconds float64, maxCount int64) bool {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	limiter, ok := l.limiterMap[clientID]
+	if !ok {
+		// 计算qps
+		limit := float64(maxCount) / (intervalMilliSeconds / 1000.0)
+		limiter = rate.NewLimiter(rate.Limit(limit), int(maxCount))
+		l.limiterMap[clientID] = limiter
+	}
+	return limiter.Allow()
+}
+
 var (
-	groupPolicies = []*models.GroupPolicy{}
+	groupPolicies            = []*models.GroupPolicy{}
+	groupPoliciesRateLimiter = NewGroupPoliciesRateLimiter()
 )
 
 // InitGroupPolicy ...
@@ -605,17 +633,11 @@ func IsMatchGroupPolicy(hitValueMap *sync.Map, appID int64, value string, checkP
 	return false, nil
 }
 
-// IsMatchGroupPolicyRateLimit 是否匹配到频率限制
+// IsMatchGroupPolicyRateLimit 是否匹配到频率限制 return iscc clientID needlog
 func IsMatchGroupPolicyRateLimit(r *http.Request, policy *models.GroupPolicy, srcIP string) (bool, string, bool) {
 	if !policy.CcStatus || policy.Action == models.Action_Pass_400 {
 		return false, "", false
 	}
-	ccAppID := policy.AppID
-	if policy.AppID == 0 {
-		ccAppID = 0 // Important: stat within general policy
-	}
-	ccCount, _ := ccCounts.LoadOrStore(ccAppID, &sync.Map{})
-	appCCCount := ccCount.(*sync.Map)
 	// 构建访问唯一标识
 	preHashContent := srcIP + fmt.Sprint(policy.ID)
 	if policy.StatByURL {
@@ -630,20 +652,11 @@ func IsMatchGroupPolicyRateLimit(r *http.Request, policy *models.GroupPolicy, sr
 		preHashContent += cookie
 	}
 	clientID := data.SHA256Hash(preHashContent)
-	clientIDStat, _ := appCCCount.LoadOrStore(clientID, &models.ClientStat{QuickCount: 0, SlowCount: 0, TimeFrameCount: 0, IsBadIP: false, RemainSeconds: 0})
-	clientStat := clientIDStat.(*models.ClientStat)
-	clientStat.Mutex.Lock()
-	defer clientStat.Mutex.Unlock()
-	if clientStat.IsBadIP {
-		needLog := false
-		if clientStat.QuickCount == 0 {
-			clientStat.QuickCount++
-			needLog = true
-		}
-		return true, clientID, needLog
+	allowed := groupPoliciesRateLimiter.Allowed(clientID, policy.IntervalMilliSeconds, policy.MaxCount)
+	if allowed {
+		return false, "", false
 	}
-	clientStat.QuickCount++
-	return false, "", false
+	return true, clientID, true
 }
 
 // PreProcessString ...
